@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
 public class Forest<E> {
 	private HashMap<E, HashMap<E, Double>> graph;
@@ -28,13 +29,31 @@ public class Forest<E> {
 		Set<E> visited = new HashSet<>();
 		for(E node : motherBranch) 
 			if (!visited.contains(node)) {
-				Set<E> newCC = DFS(new HashSet<E>(), node);
+				Set<E> newCC = DFS(/*new HashSet<E>(),*/ node);
 				visited.addAll(newCC);
 				CCs.add(new Branch(this, newCC));
 			}
 		return CCs;
 	}
 	
+	private Set<E> DFS (E node) {
+		Set<E> newCC = new HashSet<>();
+		Stack<E> stack = new Stack<>();
+		stack.push(node);
+		E curr;
+		
+		while(!stack.isEmpty()) {
+			curr = stack.pop();
+			newCC.add(curr);
+			if (graph.get(curr) != null && !graph.get(curr).isEmpty()) 
+				for(E child : graph.get(curr).keySet())
+					if (!isCut(curr, child) && !newCC.contains(child))
+						stack.push(child);
+		}
+		
+		return newCC;
+	}
+	//this method dosn't run on huge data sets due to a stack overflow
 	private Set<E> DFS (Set<E> newCC, E curr) {
 		newCC.add(curr);
 		if (graph.get(curr) != null && !graph.get(curr).isEmpty())

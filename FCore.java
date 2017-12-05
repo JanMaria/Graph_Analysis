@@ -6,10 +6,14 @@ import java.util.Set;
 
 public class FCore{
 	private HashMap<String, HashMap<String, Double>> graph;
-	private static final double THRESHOLD = 2;
+	private static /*final */double THRESHOLD = 2;
 	
 	public FCore(HashMap<String, HashMap<String, Double>> graph) {
 		this.graph = graph;
+	}
+	
+	public void setThreshold(int threshold) {
+		THRESHOLD = threshold;
 	}
 	
 	public HashMap<String, HashMap<String, Double>> findFCore() {
@@ -52,7 +56,7 @@ public class FCore{
 	}
 	
 	public void findFcore(float f) {
-		
+		//TODO: 
 	}
 	
 	private HashSet<String> findExterior(HashSet<String> exterior, String currAuthor) {
@@ -69,6 +73,10 @@ public class FCore{
 		}
 		
 		return exterior;
+	}
+	
+	public HashMap<String, HashMap<String, Double>> getGraph() {
+		return graph;
 	}
 
 }
