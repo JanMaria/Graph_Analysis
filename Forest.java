@@ -20,22 +20,22 @@ public class Forest<E> {
 	}
 	
 	public ArrayList<Branch<E>> getFirstCCs(/*HashSet<E> branch*/) {
-		return findCCs((HashSet<E>)graph.keySet());
+		return findCCs(graph.keySet());
 	}
 	
-	private ArrayList<Branch<E>> findCCs(HashSet<E> motherBranch) {
+	private ArrayList<Branch<E>> findCCs(Set<E> motherBranch) {
 		ArrayList<Branch<E>> CCs = new ArrayList<>();
-		HashSet<E> visited = new HashSet<>();
+		Set<E> visited = new HashSet<>();
 		for(E node : motherBranch) 
 			if (!visited.contains(node)) {
-				HashSet<E> newCC = DFS(new HashSet<E>(), node);
+				Set<E> newCC = DFS(new HashSet<E>(), node);
 				visited.addAll(newCC);
 				CCs.add(new Branch(this, newCC));
 			}
 		return CCs;
 	}
 	
-	private HashSet<E> DFS (HashSet<E> newCC, E curr) {
+	private Set<E> DFS (Set<E> newCC, E curr) {
 		newCC.add(curr);
 		if (graph.get(curr) != null && !graph.get(curr).isEmpty())
 			for(E node : graph.get(curr).keySet())
@@ -54,25 +54,25 @@ public class Forest<E> {
 	//temporary public
 	public class Branch<E> {
 		private Forest<E> forest;
-		private HashSet<E> nodes;
+		private Set<E> nodes;
 		private ArrayList<Branch<E>> children;
 		
 		
-		public Branch(Forest<E> forest, HashSet<E> nodes) {
+		public Branch(Forest<E> forest, Set<E> nodes) {
 			this.nodes = nodes;
 			children = new ArrayList<>(); //a moze null
 			this.forest = forest;
 		}
 		
 		//temporary method
-		public HashSet<E> getNodes() {
+		public Set<E> getNodes() {
 			return nodes;
 		}
 	}
 	
 	public static void main (String ... args) {
 		HashMap<String, HashMap<String, String>> hm = new HashMap<>();
-		System.out.println(hm.keySet() instanceof Set<?>);
+		//System.out.println(hm.keySet() instanceof Set<?>);
 		/*hm.put("bla", null);
 		System.out.println	(hm.get("bla").isEmpty());*/
 	}

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 public class MyRunner {
 	
@@ -11,11 +12,26 @@ public class MyRunner {
 		HashMap<String, HashMap<String, Double>> graph = new HashMap<>();
 		MyParser2 parser = new MyParser2();
 		//long strt = System.nanoTime();
-		parser.firstParse(filename);
+		//parser.firstParse(filename);
 		//System.out.println("run time is : " + (System.nanoTime() - strt) / Math.pow(10,9));
 		
-		Forest<String> f = new Forest<>(parser.getGraph());
+		/*Forest<String> f = new Forest<>(parser.getGraph());
 		ArrayList<Forest<String>.Branch<String>> al = f.getFirstCCs();
+		for (Forest<String>.Branch<String> branch : al) {
+			if (branch.getNodes().size() > 10)
+				System.out.println(branch.getNodes().size());
+		}*/
+		
+		HashMap<Integer, HashMap<Integer,Double>> hm = RandMap.generate(3, 10, 1);
+		
+		hm.entrySet().forEach(e -> System.out.println(e.getKey() + " {" + e.getValue() + "}"));
+		
+		Forest<Integer> fi = new Forest<>(hm);
+		ArrayList<Forest<Integer>.Branch<Integer>> ali = fi.getFirstCCs();
+		for (Forest<Integer>.Branch<Integer> branch : ali) {
+			System.out.println(branch.getNodes());
+		}
+		
 		
 		
 		/*graph = parser.getGraph();
