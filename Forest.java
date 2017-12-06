@@ -11,25 +11,55 @@ public class Forest<E> {
 	// Isn't a tree, in essence, a big branch? ;) 
 	private ArrayList<Branch<E>> trees;
 	
+	//how deeply to split the graph
+	private int maxNumNodes = 5; 
+	
 	
 	public Forest(HashMap<E, HashMap<E, Double>> graph) {
+		if (graph == null || graph.isEmpty()) throw (new IllegalArgumentException("Cannot pass graph cannot be empty"));
 		this.graph = graph;
 		this.cutEdges = new HashMap<>();
-		this.branchTips = new ArrayList<>();
-		this.trees = new ArrayList<>();
+		//this.branchTips = new ArrayList<>();
+		//this.trees = new ArrayList<>();
 		
 	}
 	
-	public ArrayList<Branch<E>> getFirstCCs(/*HashSet<E> branch*/) {
-		return findCCs(graph.keySet());
+	public void growForest() throws Exception {
+		if (!trees.isEmpty()) throw (new Exception("Forest already grows")); 
+		
+		trees = branchOut(graph.keySet());
+		branchTips = trees;
 	}
 	
-	private ArrayList<Branch<E>> findCCs(Set<E> motherBranch) {
+	//Edge Clustering Coefficient
+	private double ECC (E start, E end) {
+		double sum = 1.0; //so as to avoid 0 in the numerator
+		sum += graph.get(start).keySet().stream().filter(other -> !other.equals(end) && !isCut(start, other)).count();
+		//maximum number of possible triangles created with this edge 
+		int maxTriangles = (newDegree(start) > newDegree(end)) ? newDegree(start) - 1 : newDegree(end) - 1;
+		
+		return sum / maxTriangles;
+	}
+	
+	private int newDegree(E node) {
+		int degree = 0;
+		degree += graph.get(node).keySet().stream().filter(other -> !isCut(node, other)).count();
+		
+		return degree;
+	}
+	
+	/*//temporary testing method
+	public ArrayList<Branch<E>> getFirstCCs() {
+		return findCCs(graph.keySet());
+	}*/
+	
+	//find Connected Components
+	private ArrayList<Branch<E>> branchOut(Set<E> motherBranch) {
 		ArrayList<Branch<E>> CCs = new ArrayList<>();
 		Set<E> visited = new HashSet<>();
 		for(E node : motherBranch) 
 			if (!visited.contains(node)) {
-				Set<E> newCC = DFS(/*new HashSet<E>(),*/ node);
+				Set<E> newCC = DFS(node);
 				visited.addAll(newCC);
 				CCs.add(new Branch(this, newCC));
 			}
