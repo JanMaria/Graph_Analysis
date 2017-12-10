@@ -33,8 +33,8 @@ public class Forest<E> {
 		
 	}
 	
-	public void plantForest() throws Exception {
-		if (!trees.isEmpty()  /* != null*/) throw (new Exception("Forest already grows")); 
+	public void plantForest(){
+		if (!trees.isEmpty()) throw (new RuntimeException("Forest already grows")); 
 		
 		for (Set<E> tree : findBranchOuts(graph.keySet())) {
 			trees.add(new Branch<E>(tree));
@@ -44,7 +44,24 @@ public class Forest<E> {
 	}
 	
 	public void growWholeBranches() {
-		while (growBranches(1)) {}
+		while (growBranches(1000)) {}
+	}
+	
+	//temporary testing method
+	public void printSample() {
+		int i = 0;
+		for (Branch<E> branch : branchTips) {
+			if (branch.size() < 20) {
+				StringBuilder sb = new StringBuilder();
+				sb.append(branch);
+				if (branch.parent != null) {sb.append(" parent: " + branch.parent.getNodes());}
+				else {sb.append(" parent: " + branch.parent);}
+				if (branch.parent.parent != null) sb.append("\nPARRENT parent: " + branch.parent.parent.getNodes());
+				else sb.append("\nPARRENT parent: " + branch.parent.parent);
+				System.out.println(sb);
+				if (i++ > 10) break;
+			}
+		}
 	}
 	
 	//jakas inna nazwa chyba and this method is useless for larger graph because it iterates only once
@@ -63,6 +80,7 @@ public class Forest<E> {
 	}
 	
 	private boolean growBranches(int threshold) {
+		long start = System.nanoTime();
 		boolean nextIterNeeded = false; 
 		List<Branch<E>> branchOuts = new LinkedList<>(); 
 		Iterator<Branch<E>> it = branchTips.iterator();
@@ -72,12 +90,14 @@ public class Forest<E> {
 				for (Set<E> branchOut : branchOut(branch.getNodes())) branchOuts.add(new Branch(branchOut, branch)); 
 				
 				it.remove();
+				
 			}
 		}
 		for (Branch<E> branch : branchOuts) {
 			if (branch.size() > threshold) nextIterNeeded = true;
 			branchTips.add(branch);
 		}
+		System.out.format("\nONE ITERATION ENDED IN TIME: %s%n", (System.nanoTime() - start) / Math.pow(10,9));
 		return nextIterNeeded;
 	}
 	
@@ -155,18 +175,21 @@ public class Forest<E> {
 	private double findMinCoeff(Set<E> branch) /*throws Exception */{
 		if (branch.size() < 2) throw (new RuntimeException("Branch has only one node"));
 		double min = Double.POSITIVE_INFINITY;
-		double partialMin = Double.POSITIVE_INFINITY;
+		//double partialMin = Double.POSITIVE_INFINITY;
 		for(E node : branch)
 			if (coefficients.containsKey(node)) {
-				//try {
+				for (Map.Entry<E, Double> neighbor : coefficients.get(node).entrySet())
+					if (neighbor.getValue() < min) 
+						min = neighbor.getValue();
+				/*try {
 				partialMin = coefficients.get(node).entrySet().stream()
 						.filter(e -> branch.contains(e.getKey()) && !isCut(node, e.getKey()))
 						.mapToDouble(e -> e.getValue()).min().getAsDouble();
-				/*} catch (NoSuchElementException err) {
+				} catch (NoSuchElementException err) {
 					partialMin = Double.POSITIVE_INFINITY;
 					System.out.println("No such element catched");
-				}*/
-				min = (partialMin < min) ? partialMin : min;
+				}
+				min = (partialMin < min) ? partialMin : min;*/
 			}
 		return min;
 	}
@@ -325,7 +348,7 @@ public class Forest<E> {
 		private Forest<E> forest;
 		private Set<E> nodes;
 		private Branch<E> parent;
-		private ArrayList<Branch<E>> children;
+		private ArrayList<Branch<E>> children;  // nie sa inicjowane na razie nigdy
 		
 		
 		/*does it need forest?*/
@@ -352,7 +375,7 @@ public class Forest<E> {
 			sb.append("[\n");
 			for(E e : nodes) 
 				sb.append("- " + e + "\n");
-			sb.append("]\n");
+			sb.append("]");
 			
 			return sb.toString();
 		}
@@ -362,11 +385,11 @@ public class Forest<E> {
 		}
 	}
 	
-	public static void main (String ... args) {
+	/*public static void main (String ... args) {
 		HashMap<String, HashMap<String, String>> hm = new HashMap<>();
 		//System.out.println(hm.keySet() instanceof Set<?>);
-		/*hm.put("bla", null);
-		System.out.println	(hm.get("bla").isEmpty());*/
+		hm.put("bla", null);
+		System.out.println	(hm.get("bla").isEmpty());
 		int b = 0;
 		HashMap<Integer, HashMap<Integer, Double>> hmi = RandMap.generate(4, 10, 1); 
 		for (Integer i : hmi.keySet())
@@ -380,18 +403,21 @@ public class Forest<E> {
 				for (Integer i : f.graph.get(1).keySet()) {
 					System.out.println("jblklkbdlkfskdf" + i);
 				}
-				/*if (branch.size() > 1) f.trimEdges(branch.getNodes());
+				if (branch.size() > 1) f.trimEdges(branch.getNodes());
 				for (Set s : f.branchOut(branch.getNodes()))
-					System.out.println("BRANCHOUT: " + b + s);*/
+					System.out.println("BRANCHOUT: " + b + s);
 				//if (branch.size() > 1) System.out.println("BRANCHOUT: " + b + f.branchOut(branch.getNodes()));
 				
 			}
 			f.growWholeBranches();
 			int in = 0;
 			for (Forest<Integer>.Branch<Integer> branch : f.branchTips) 
-				System.out.println("BRANCH TIP: " + ++in + branch);
-			/*for (Integer i : f.coefficients.keySet()) 
-				System.out.println(i + " {" + f.coefficients.get(i) + "}");*/
+				System.out.println("BRANCH TIP: " + ++in + branch + " parrent: " + branch.parent);
+			
+			for (Forest<Integer>.Branch<Integer>  tree : f.trees)
+				System.out.println(tree);
+			for (Integer i : f.coefficients.keySet()) 
+				System.out.println(i + " {" + f.coefficients.get(i) + "}");
 			
 			
 			
@@ -401,6 +427,6 @@ public class Forest<E> {
 		}
 		
 		//f.
-	}
+	}*/
 
 }

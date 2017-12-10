@@ -56,7 +56,46 @@ public class MyRunner {
 		fCore.findFCore();
 		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
 		
+		fCore.setThreshold(8);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(9);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(10);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(11);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(12);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(13);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(14);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(15);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
 		Forest<String> f = new Forest<>(graph);
+		f.plantForest();
+		
+		long start = System.nanoTime();
+		f.growWholeBranches();
+		System.out.println("GROWING BRANCHES TIME: " + (System.nanoTime() - start) / Math.pow(10, 9));
+		
+		//f.printSample();
 		//ArrayList<Forest<String>.Branch<String>> al = f.getFirstCCs();
 		//System.out.format("there are %s trees in that forest\n", al.size());
 		
