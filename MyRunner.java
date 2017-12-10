@@ -57,10 +57,10 @@ public class MyRunner {
 		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
 		
 		Forest<String> f = new Forest<>(graph);
-		ArrayList<Forest<String>.Branch<String>> al = f.getFirstCCs();
-		System.out.format("there are %s trees in that forest\n", al.size());
+		//ArrayList<Forest<String>.Branch<String>> al = f.getFirstCCs();
+		//System.out.format("there are %s trees in that forest\n", al.size());
 		
-		int count = 0;
+		/*int count = 0;
 		for (Forest<String>.Branch<String> branch : al) {
 			System.out.print(branch.getNodes().size() + " ");
 			if (++count%30 == 0)
@@ -68,7 +68,7 @@ public class MyRunner {
 		}
 		
 		int fullSize = al.stream().mapToInt(b -> b.getNodes().size()).sum();
-		System.out.println("\nfull size is " + fullSize);
+		System.out.println("\nfull size is " + fullSize);*/
 	}
 
 }
