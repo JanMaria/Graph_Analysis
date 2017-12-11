@@ -44,7 +44,7 @@ public class Forest<E> {
 	}
 	
 	public void growWholeBranches() {
-		while (growBranches(1000)) {}
+		while (growBranches(1)) {}
 	}
 	
 	//temporary testing method
@@ -385,17 +385,16 @@ public class Forest<E> {
 		}
 	}
 	
-	/*public static void main (String ... args) {
-		HashMap<String, HashMap<String, String>> hm = new HashMap<>();
-		//System.out.println(hm.keySet() instanceof Set<?>);
-		hm.put("bla", null);
-		System.out.println	(hm.get("bla").isEmpty());
+	public static void main (String ... args) {
+		
 		int b = 0;
 		HashMap<Integer, HashMap<Integer, Double>> hmi = RandMap.generate(4, 10, 1); 
 		for (Integer i : hmi.keySet())
 			System.out.println(i + " {" + hmi.get(i));
 		Forest<Integer> f = new Forest<>(hmi);
-		try {
+		f.plantForest();
+		System.out.println(f.coefficients);
+		/*try {
 			f.plantForest();
 			for(Forest<Integer>.Branch<Integer> branch : f.trees){
 				if (branch.size() > 1) System.out.format("Minimum coeff for %s branch is %s%n", ++b, f.findMinCoeff(branch.getNodes()));
@@ -427,6 +426,6 @@ public class Forest<E> {
 		}
 		
 		//f.
-	}*/
+*/	}
 
 }
