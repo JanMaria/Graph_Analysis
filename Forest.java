@@ -56,10 +56,10 @@ public class Forest<E> {
 				sb.append(branch);
 				if (branch.parent != null) {sb.append(" parent: " + branch.parent.getNodes());}
 				else {sb.append(" parent: " + branch.parent);}
-				if (branch.parent.parent != null) sb.append("\nPARRENT parent: " + branch.parent.parent.getNodes());
-				else sb.append("\nPARRENT parent: " + branch.parent.parent);
+				/*if (branch.parent.parent != null) sb.append("\nPARRENT parent: " + branch.parent.parent.getNodes());
+				else sb.append("\nPARRENT parent: " + branch.parent.parent);*/
 				System.out.println(sb);
-				if (i++ > 10) break;
+				//if (i++ > 10) break;
 			}
 		}
 	}

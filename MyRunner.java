@@ -8,7 +8,7 @@ public class MyRunner {
 		String filename = "";
 		filename = "C:/Users/Jan/Desktop/Jan/Programowanie/Capstone/data/tiny.json";
 		filename = "C:/Users/Jan/Desktop/Jan/Programowanie/Capstone/data/1989-93.json";
-		filename = "C:/Users/Jan/Desktop/Jan/Programowanie/Capstone/data/dblp.json";
+		//filename = "C:/Users/Jan/Desktop/Jan/Programowanie/Capstone/data/dblp.json";
 		
 		HashMap<String, HashMap<String, Double>> graph = new HashMap<>();
 		MyParser2 parser = new MyParser2();
@@ -36,7 +36,7 @@ public class MyRunner {
 		System.out.println("run time is : " + (System.nanoTime() - strt) / Math.pow(10,9));
 		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
 		
-		fCore.setThreshold(3);
+		/*fCore.setThreshold(3);
 		fCore.findFCore();
 		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
 		
@@ -88,14 +88,35 @@ public class MyRunner {
 		fCore.findFCore();
 		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
 		
+		fCore.setThreshold(16);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(17);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(18);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(19);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
+		
+		fCore.setThreshold(20);
+		fCore.findFCore();
+		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());*/
+		
 		Forest<String> f = new Forest<>(graph);
 		f.plantForest();
+		System.out.println("FORRETST PLANTED");
 		
 		long start = System.nanoTime();
 		f.growWholeBranches();
 		System.out.println("GROWING BRANCHES TIME: " + (System.nanoTime() - start) / Math.pow(10, 9));
 		
-		//f.printSample();
+		f.printSample();
 		//ArrayList<Forest<String>.Branch<String>> al = f.getFirstCCs();
 		//System.out.format("there are %s trees in that forest\n", al.size());
 		
