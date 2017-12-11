@@ -6,14 +6,14 @@ import java.util.Set;
 
 public class FCore{
 	private HashMap<String, HashMap<String, Double>> graph;
-	private static /*final */double THRESHOLD = 2;
+	private static /*final */double threshold = 2;
 	
 	public FCore(HashMap<String, HashMap<String, Double>> graph) {
 		this.graph = graph;
 	}
 	
 	public void setThreshold(int threshold) {
-		THRESHOLD = threshold;
+		this.threshold = threshold;
 	}
 	
 	public HashMap<String, HashMap<String, Double>> findFCore() {
@@ -65,7 +65,7 @@ public class FCore{
 			HashMap<String, Double> currMap = graph.get(currAuthor); 
 			sum = currMap.entrySet().stream().filter(e -> !exterior.contains(e.getKey()))
 					.mapToDouble(e -> e.getValue()).sum();
-			if (sum < THRESHOLD) {
+			if (sum < threshold) {
 				exterior.add(currAuthor);
 				for (String author : currMap.keySet())
 					findExterior(exterior, author);
