@@ -36,11 +36,12 @@ public class Forest<E> {
 	public void plantForest(){
 		if (!trees.isEmpty()) throw (new RuntimeException("Forest already grows")); 
 		
+		initAllCoeffs();
 		for (Set<E> tree : findBranchOuts(graph.keySet())) {
 			trees.add(new Branch<E>(tree));
 			branchTips.add(new Branch<E> (tree));
 		}
-		initAllCoeffs();
+		
 		System.out.println("BUHAHAHAHHA: \n" + coefficients);
 	}
 	
