@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
 
@@ -33,6 +32,10 @@ public class Forest<E> {
 		
 	}
 	
+	/*
+	 * This method makes a list of connected components in a given graph and creates Branch objects with them.
+	 * They become first branches (tree trunks)  
+	 */
 	public void plantForest(){
 		if (!trees.isEmpty()) throw (new RuntimeException("Forest already grows")); 
 		
@@ -60,6 +63,7 @@ public class Forest<E> {
 		}
 	}
 	
+	//split connected components of the graph as long as they are all smaller than the threshold
 	private boolean growBranches(int threshold) {
 		boolean nextIterNeeded = false; 
 		List<Branch<E>> branchOuts = new LinkedList<>(); 
@@ -78,6 +82,9 @@ public class Forest<E> {
 		return nextIterNeeded;
 	}
 	
+	/*
+	 * for a given connected component cut it's weakest edges as long as it will partition into at least two parts
+	 */
 	private List<Set<E>> branchOut(Set<E> branch) {
 		List<Set<E>> branchOuts = new LinkedList<>();
 		do { 
@@ -87,6 +94,7 @@ public class Forest<E> {
 		return branchOuts;
 	}
 	
+	// trim weakest edges
 	private void trimEdges(Set<E> branch) {
 		double min = findMinCoeff(branch);
 		List<E> dumpster = new ArrayList<>();
@@ -105,6 +113,7 @@ public class Forest<E> {
 			cutEdge(it.next(), it.next());
 		}
 	}
+	
 	
 	private double getCoeff(E start, E end) {
 		if (coefficients.containsKey(start))
@@ -137,6 +146,7 @@ public class Forest<E> {
 		return min;
 	}
 	
+	//all necessary changes upon edge cut 
 	private void cutEdge(E start, E end) {
 		if (!cutEdges.containsKey(start)) cutEdges.put(start, new HashSet<>()); 
 		cutEdges.get(start).add(end);
@@ -194,6 +204,7 @@ public class Forest<E> {
 		return sum;
 	}
 	
+	//node degree in the graph that has lost some edges
 	private int newDegree(E node) {
 		int degree = 0;
 		degree += graph.get(node).keySet().stream().filter(other -> !isCut(node, other)).count();
@@ -202,8 +213,8 @@ public class Forest<E> {
 	}
 	
 	//find Connected Components
-	private ArrayList<Set<E>> findCCs(Set<E> motherSet) {
-		ArrayList<Set<E>> CCs = new ArrayList<>();
+	private List<Set<E>> findCCs(Set<E> motherSet) {
+		List<Set<E>> CCs = new LinkedList<>();
 		Set<E> visited = new HashSet<>();
 		for(E node : motherSet) 
 			if (!visited.contains(node)) {
