@@ -36,9 +36,10 @@ public class Forest<E> {
 	public void plantForest(){
 		if (!trees.isEmpty()) throw (new RuntimeException("Forest already grows")); 
 		
-		for (Set<E> tree : findBranchOuts(graph.keySet())) {
-			trees.add(new Branch<E>(tree));
-			branchTips.add(new Branch<E> (tree));
+		for (Set<E> treeNodes : findBranchOuts(graph.keySet())) {
+			Branch<E> tree = new Branch<E>(treeNodes);
+			trees.add(tree);
+			branchTips.add(tree);
 		}
 		initAllCoeffs();
 	}
@@ -348,21 +349,21 @@ public class Forest<E> {
 		private Forest<E> forest;
 		private Set<E> nodes;
 		private Branch<E> parent;
-		private ArrayList<Branch<E>> children;  // nie sa inicjowane na razie nigdy
+		private List<Branch<E>> children;  // nie sa inicjowane na razie nigdy
 		
 		
-		/*does it need forest?*/
-		public Branch(/*Forest<E> forest, */Set<E> nodes, Branch<E> parent) {
+		public Branch(Set<E> nodes, Branch<E> parent) {
 			this.nodes = nodes;
 			this.parent = parent;
-			children = new ArrayList<>(); //a moze null
-			/*this.forest = forest;*/
+			children = new LinkedList<>(); //a moze null
+			parent.addChild(this);
+			//parent.children.add(this);
 		}
 		
 		public Branch(Set<E> nodes) {
 			this.nodes = nodes;
 			parent = null;
-			children = new ArrayList<>(); // a moze null jak wyzej
+			children = new LinkedList<>(); // a moze null jak wyzej
 		}
 		
 		//temporary method
@@ -370,11 +371,26 @@ public class Forest<E> {
 			return nodes;
 		}
 		
+		public void addChild(Branch<E> child) {
+			children.add(child);
+		}
+		
+		public List<Branch<E>> getChildren() {
+			return children;
+		}
+		
+		public Branch<E> getParent() {
+			return parent;
+		}
+		
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("[\n");
-			for(E e : nodes) 
-				sb.append("- " + e + "\n");
+			sb.append("[");
+			Iterator<E> it = nodes.iterator();
+			while (it.hasNext()) {
+				sb.append(it.next());
+				if (it.hasNext()) sb.append(", ");
+			}
 			sb.append("]");
 			
 			return sb.toString();
@@ -394,6 +410,17 @@ public class Forest<E> {
 		Forest<Integer> f = new Forest<>(hmi);
 		f.plantForest();
 		System.out.println(f.coefficients);
+		f.growWholeBranches();
+		/*for(Forest<Integer>.Branch<Integer> tree : f.trees) {
+			System.out.println("tree: " + tree + "\nchildren: ");
+			for (Forest<Integer>.Branch<Integer> child : tree.getChildren()) {
+				System.out.println("child: " + child);
+			}
+		}*/
+		
+		for(Forest<Integer>.Branch<Integer> tip : f.branchTips) {
+			if (tip.getParent() != null) System.out.println("tip: " + tip + "\nparent: " + tip.getParent() + "\nPARENTS-CHILDREN: " + tip.getParent().getChildren());
+		}
 		/*try {
 			f.plantForest();
 			for(Forest<Integer>.Branch<Integer> branch : f.trees){
