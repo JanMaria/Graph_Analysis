@@ -15,7 +15,7 @@ public class Forest<E> {
 	 * in both of following structures there will be only one entry for one edge
 	 * (either node1-node2 or node2-node1 but not both)  
 	 */
-	private HashMap<E, HashSet<E>> cutEdges; //this is useless when coefficients has the same nodes 
+	private HashMap<E, HashSet<E>> cutEdges;  
 	private HashMap<E, HashMap<E, Double>> coefficients;
 	
 	private LinkedList<Branch<E>> branchTips;
@@ -36,7 +36,7 @@ public class Forest<E> {
 	public void plantForest(){
 		if (!trees.isEmpty()) throw (new RuntimeException("Forest already grows")); 
 		
-		for (Set<E> treeNodes : findBranchOuts(graph.keySet())) {
+		for (Set<E> treeNodes : findCCs(graph.keySet())) {
 			Branch<E> tree = new Branch<E>(treeNodes);
 			trees.add(tree);
 			branchTips.add(tree);
@@ -48,57 +48,33 @@ public class Forest<E> {
 		while (growBranches(1)) {}
 	}
 	
-	//temporary testing method
+	//method that helps testing and debugging 
 	public void printSample() {
 		int i = 0;
 		for (Branch<E> branch : branchTips) {
-			if (branch.size() < 20) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(branch);
-				if (branch.parent != null) {sb.append(" parent: " + branch.parent.getNodes());}
-				else {sb.append(" parent: " + branch.parent);}
-				/*if (branch.parent.parent != null) sb.append("\nPARRENT parent: " + branch.parent.parent.getNodes());
-				else sb.append("\nPARRENT parent: " + branch.parent.parent);*/
+				sb.append("\n\tsmallest parent community: " + branch.parent);
 				System.out.println(sb);
-				//if (i++ > 10) break;
-			}
+				if (i++ > 20) break;
 		}
-	}
-	
-	//jakas inna nazwa chyba and this method is useless for larger graph because it iterates only once
-	private void growBranches() {
-		List<Branch<E>> branchOuts = new LinkedList<>(); 
-		Iterator<Branch<E>> it = branchTips.iterator();
-		while (it.hasNext()) {
-			Branch<E> branch = it.next();
-			if (branch.size() > 5) { /////////////// this is threshold... should be changed somehow
-				for (Set<E> branchOut : branchOut(branch.getNodes())) branchOuts.add(new Branch(branchOut, branch)); 
-				/*branchOuts.addAll(branchOut(branch.getNodes()));*/
-				it.remove();
-			}
-		}
-		for (Branch<E> branch : branchOuts) branchTips.add(branch);
 	}
 	
 	private boolean growBranches(int threshold) {
-		long start = System.nanoTime();
 		boolean nextIterNeeded = false; 
 		List<Branch<E>> branchOuts = new LinkedList<>(); 
 		Iterator<Branch<E>> it = branchTips.iterator();
 		while (it.hasNext()) {
 			Branch<E> branch = it.next();
 			if (branch.size() > threshold) { 
-				for (Set<E> branchOut : branchOut(branch.getNodes())) branchOuts.add(new Branch(branchOut, branch)); 
-				
+				for (Set<E> branchOut : branchOut(branch.getNodes())) branchOuts.add(new Branch<E>(branchOut, branch)); 
 				it.remove();
-				
 			}
 		}
 		for (Branch<E> branch : branchOuts) {
 			if (branch.size() > threshold) nextIterNeeded = true;
 			branchTips.add(branch);
 		}
-		System.out.format("\nONE ITERATION ENDED IN TIME: %s%n", (System.nanoTime() - start) / Math.pow(10,9));
 		return nextIterNeeded;
 	}
 	
@@ -106,18 +82,10 @@ public class Forest<E> {
 		List<Set<E>> branchOuts = new LinkedList<>();
 		do { 
 			trimEdges(branch);
-			branchOuts = findBranchOuts(branch);
+			branchOuts = findCCs(branch);
 		} while (branchOuts.size() < 2);
 		return branchOuts;
 	}
-	
-	/*private void trimEdges(Set<E> branch){
-		double min = findMinCoeff(branch);
-		for (E node : branch) 
-			for (E neighbor : graph.get(node).keySet()) 
-				if (!isCut(node, neighbor) && graph.get(node).get(neighbor) == min) //tu chyba powinno byc coefficients a nie graph
-					cutEdge(node,neighbor);
-	}*/
 	
 	private void trimEdges(Set<E> branch) {
 		double min = findMinCoeff(branch);
@@ -145,21 +113,6 @@ public class Forest<E> {
 		return coefficients.get(end).get(start);
 	}
 	
-	/*private void trimForest() {
-		trimEdges(graph.keySet());
-	}*/
-	
-	//this method is optimized to work better with the whole graph 
-	private void trimForest() {
-		double min = findMinCoeff(graph.keySet());
-		for (E node : coefficients.keySet()) {
-			for (Map.Entry<E, Double> neighbor : coefficients.get(node).entrySet()) // what happens if coefficients.get(node).isEmpty() == true?
-				if (neighbor.getValue() == min)
-					cutEdge(node, neighbor.getKey());
-		}
-			
-	}
-	
 	private void recalcCoeffs(E node) {
 		for (E neighbor : graph.get(node).keySet())
 			if (!isCut(node, neighbor)) {
@@ -172,43 +125,14 @@ public class Forest<E> {
 			}
 	}
 	
-	//this is useful if I decide to split only one branch (e.g. giant component)
-	private double findMinCoeff(Set<E> branch) /*throws Exception */{
+	private double findMinCoeff(Set<E> branch) {
 		if (branch.size() < 2) throw (new RuntimeException("Branch has only one node"));
 		double min = Double.POSITIVE_INFINITY;
-		//double partialMin = Double.POSITIVE_INFINITY;
 		for(E node : branch)
 			if (coefficients.containsKey(node)) {
 				for (Map.Entry<E, Double> neighbor : coefficients.get(node).entrySet())
 					if (neighbor.getValue() < min) 
 						min = neighbor.getValue();
-				/*try {
-				partialMin = coefficients.get(node).entrySet().stream()
-						.filter(e -> branch.contains(e.getKey()) && !isCut(node, e.getKey()))
-						.mapToDouble(e -> e.getValue()).min().getAsDouble();
-				} catch (NoSuchElementException err) {
-					partialMin = Double.POSITIVE_INFINITY;
-					System.out.println("No such element catched");
-				}
-				min = (partialMin < min) ? partialMin : min;*/
-			}
-		return min;
-	}
-	
-	private double findMinCoeff() {
-		double min = Double.POSITIVE_INFINITY;
-		double partialMin = Double.POSITIVE_INFINITY;
-		for(E node : graph.keySet())
-			if (coefficients.containsKey(node)) {
-				//try {
-				partialMin = coefficients.get(node).entrySet().stream()
-						/*.filter(e -> !isCut(node, e.getKey()))*/
-						.mapToDouble(e -> e.getValue()).min().getAsDouble();
-				/*} catch (NoSuchElementException err) {
-					partialMin = Double.POSITIVE_INFINITY;
-					System.out.println("No such element catched");
-				}*/
-				min = partialMin < min ? partialMin : min;
 			}
 		return min;
 	}
@@ -227,16 +151,6 @@ public class Forest<E> {
 				coefficients.get(end).keySet().remove(start);
 	}
 	
-	//this is probably going to be deleted 
-	private void initAllCoeff(Branch<E> branch) {
-		for (E node : branch.getNodes())
-			for (E neighbor : graph.get(node).keySet())
-				if (!hasCoeff(node, neighbor)/* && !isCut(node, neighbor)*/) { //it's happening at the beginning so there are no cut edges
-					if (!coefficients.containsKey(node)) coefficients.put(node, new HashMap<>());  
-					coefficients.get(node).put(neighbor, ECC(node, neighbor));
-				}
-	}
-	
 	private void initAllCoeffs() {
 		for (E node : graph.keySet())
 			for (E neighbor : graph.get(node).keySet())
@@ -246,7 +160,6 @@ public class Forest<E> {
 				}
 	}
 	
-	//this is actually equivalent of !isCut
 	private boolean hasCoeff(E start, E end) {
 		if (coefficients.keySet().contains(start))
 			if (coefficients.get(start).keySet().contains(end)) return true;
@@ -288,20 +201,15 @@ public class Forest<E> {
 		return degree;
 	}
 	
-	/*//temporary testing method
-	public ArrayList<Branch<E>> getFirstCCs() {
-		return findCCs(graph.keySet());
-	}*/
-	
-	//find Connected Components ::: maybe other name e.g. findBranches or findCCs
-	private ArrayList<Set<E>> findBranchOuts(Set<E> motherSet) {
+	//find Connected Components
+	private ArrayList<Set<E>> findCCs(Set<E> motherSet) {
 		ArrayList<Set<E>> CCs = new ArrayList<>();
 		Set<E> visited = new HashSet<>();
 		for(E node : motherSet) 
 			if (!visited.contains(node)) {
 				Set<E> newCC = DFS(node);
 				visited.addAll(newCC);
-				CCs.add(newCC/*new Branch(this, newCC, new Branch<E>(motherBranch))*/);
+				CCs.add(newCC);
 			}
 		return CCs;
 	}
@@ -323,15 +231,6 @@ public class Forest<E> {
 		
 		return newCC;
 	}
-	//this method dosn't run on huge data sets due to a stack overflow
-	private Set<E> DFS (Set<E> newCC, E curr) {
-		newCC.add(curr);
-		if (graph.get(curr) != null && !graph.get(curr).isEmpty())
-			for(E node : graph.get(curr).keySet())
-				if (!isCut(curr, node) && !newCC.contains(node))
-					DFS(newCC, node);
-		return newCC;
-	}
 	
 	private boolean isCut(E curr, E neighbor) {
 		if (cutEdges.keySet().contains(curr))
@@ -343,19 +242,21 @@ public class Forest<E> {
 		return false;
 	}
 	
-	//temporary public
-	// it stores connected components of the graph ???????????
-	public class Branch<E> {
+	/*
+	 * This class is a node class for so called dendrogram which is a tree like structure created by sequential splitting 
+	 * of the graph into gradually smaller communities  
+	 */
+	private class Branch<E> {
 		private Forest<E> forest;
 		private Set<E> nodes;
 		private Branch<E> parent;
-		private List<Branch<E>> children;  // nie sa inicjowane na razie nigdy
+		private List<Branch<E>> children; 
 		
 		
 		public Branch(Set<E> nodes, Branch<E> parent) {
 			this.nodes = nodes;
 			this.parent = parent;
-			children = new LinkedList<>(); //a moze null
+			children = new LinkedList<>(); 
 			parent.addChild(this);
 			//parent.children.add(this);
 		}
@@ -363,10 +264,9 @@ public class Forest<E> {
 		public Branch(Set<E> nodes) {
 			this.nodes = nodes;
 			parent = null;
-			children = new LinkedList<>(); // a moze null jak wyzej
+			children = new LinkedList<>(); 
 		}
 		
-		//temporary method
 		public Set<E> getNodes() {
 			return nodes;
 		}
@@ -400,59 +300,4 @@ public class Forest<E> {
 			return nodes.size();
 		}
 	}
-	
-	public static void main (String ... args) {
-		
-		int b = 0;
-		HashMap<Integer, HashMap<Integer, Double>> hmi = RandMap.generate(4, 10, 1); 
-		for (Integer i : hmi.keySet())
-			System.out.println(i + " {" + hmi.get(i));
-		Forest<Integer> f = new Forest<>(hmi);
-		f.plantForest();
-		System.out.println(f.coefficients);
-		f.growWholeBranches();
-		/*for(Forest<Integer>.Branch<Integer> tree : f.trees) {
-			System.out.println("tree: " + tree + "\nchildren: ");
-			for (Forest<Integer>.Branch<Integer> child : tree.getChildren()) {
-				System.out.println("child: " + child);
-			}
-		}*/
-		
-		for(Forest<Integer>.Branch<Integer> tip : f.branchTips) {
-			if (tip.getParent() != null) System.out.println("tip: " + tip + "\nparent: " + tip.getParent() + "\nPARENTS-CHILDREN: " + tip.getParent().getChildren());
-		}
-		/*try {
-			f.plantForest();
-			for(Forest<Integer>.Branch<Integer> branch : f.trees){
-				if (branch.size() > 1) System.out.format("Minimum coeff for %s branch is %s%n", ++b, f.findMinCoeff(branch.getNodes()));
-				System.out.println("Branch " + b + " {" + branch + "}");
-				for (Integer i : f.graph.get(1).keySet()) {
-					System.out.println("jblklkbdlkfskdf" + i);
-				}
-				if (branch.size() > 1) f.trimEdges(branch.getNodes());
-				for (Set s : f.branchOut(branch.getNodes()))
-					System.out.println("BRANCHOUT: " + b + s);
-				//if (branch.size() > 1) System.out.println("BRANCHOUT: " + b + f.branchOut(branch.getNodes()));
-				
-			}
-			f.growWholeBranches();
-			int in = 0;
-			for (Forest<Integer>.Branch<Integer> branch : f.branchTips) 
-				System.out.println("BRANCH TIP: " + ++in + branch + " parrent: " + branch.parent);
-			
-			for (Forest<Integer>.Branch<Integer>  tree : f.trees)
-				System.out.println(tree);
-			for (Integer i : f.coefficients.keySet()) 
-				System.out.println(i + " {" + f.coefficients.get(i) + "}");
-			
-			
-			
-		} catch (Exception e) {
-			System.err.println("ERRRRRRRRR");
-			e.printStackTrace();
-		}
-		
-		//f.
-*/	}
-
 }
