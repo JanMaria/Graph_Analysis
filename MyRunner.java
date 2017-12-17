@@ -2,73 +2,40 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+/*
+ * This class just runs other classes methods in a proper order. 
+ */
 public class MyRunner {
 	
 	public static void main (String... args) {
 		String filename = "";
-		filename = "C:/Users/Jan/Desktop/Jan/Programowanie/Capstone/data/tiny.json";
-		filename = "C:/Users/Jan/Desktop/Jan/Programowanie/Capstone/data/1989-93.json";
-		filename = "C:/Users/Jan/Desktop/Jan/Programowanie/Capstone/data/dblp.json";
+		filename = "C:/*****************/data/dblp.json"; //gzipped file available at: http://projects.csail.mit.edu/dnd/DBLP/
 		
 		HashMap<String, HashMap<String, Double>> graph = new HashMap<>();
-		MyParser2 parser = new MyParser2();
-		//long strt = System.nanoTime();
+		MyParser parser = new MyParser();
 		parser.firstParse(filename);
-		//System.out.println("run time is : " + (System.nanoTime() - strt) / Math.pow(10,9));
-		
-		
-	
-		
-		
-		
-		
 		
 		graph = parser.getGraph();
 		System.out.format("Graph size after parse is: %s nodes", graph.size());
 		
 		FCore fCore = new FCore(graph);
 		
-		/*for (String s : graph.keySet()) {
-			System.out.println(s + " {" + graph.get(s) + "}");
-		}*/
-		long strt = System.nanoTime();
-		fCore.findFCore();
-		System.out.println("run time is : " + (System.nanoTime() - strt) / Math.pow(10,9));
-		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
-		
-		fCore.setThreshold(3);
-		fCore.findFCore();
-		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
-		
-		fCore.setThreshold(4);
-		fCore.findFCore();
-		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
-		
-		fCore.setThreshold(5);
-		fCore.findFCore();
-		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
-		
-		fCore.setThreshold(6);
-		fCore.findFCore();
-		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
-		
-		fCore.setThreshold(7);
-		fCore.findFCore();
-		System.out.format("Graph size after f-core analisys is: %s nodes\n", graph.size());
-		
-		Forest<String> f = new Forest<>(graph);
-		ArrayList<Forest<String>.Branch<String>> al = f.getFirstCCs();
-		System.out.format("there are %s trees in that forest\n", al.size());
-		
-		int count = 0;
-		for (Forest<String>.Branch<String> branch : al) {
-			System.out.print(branch.getNodes().size() + " ");
-			if (++count%30 == 0)
-				System.out.print("\n");
+		/*
+		 * this loop gradually trim the F-Core to prevent stack overflow 
+		 * although on some systems it might not be enough - it depends on
+		 * VM stack size  
+		 */
+		for (int i = 2; i <= 20; i++) {
+			fCore.setThreshold(i);
+			fCore.findFCore();
 		}
 		
-		int fullSize = al.stream().mapToInt(b -> b.getNodes().size()).sum();
-		System.out.println("\nfull size is " + fullSize);
+		Forest<String> f = new Forest<>(graph);
+		f.plantForest();
+		f.growWholeBranches();
+		
+		System.out.println("This is just a sample of the outcome: ");
+		f.printSample();
 	}
 
 }

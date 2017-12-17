@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class RandMap {
 	
-	
+	//s is seed for Random class object, n is a number of vertices and for each vertex this function generates 1 to max new edges
 	public static HashMap<Integer, HashMap<Integer, Double>> generate (int s, int n, int max) {
 		Random r = new Random(s);
 		HashMap<Integer, HashMap<Integer, Double>> hm = new HashMap<>();
