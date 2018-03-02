@@ -7,6 +7,10 @@ import java.util.HashMap;
 public class MyParser {
 	private HashMap<String, HashMap<String, Double>> graph = new HashMap<>(2000000);
 	
+	/**
+	 * Parsing method. It's called "first" just for "historical reasons". 
+	 * @param filename The name of the file to parse
+	 */
 	public void firstParse(String filename) {
 		try (BufferedReader bf = new BufferedReader(new FileReader(filename))) {
 			String s = "";
@@ -23,6 +27,11 @@ public class MyParser {
 		
 	}
 	
+	/**
+	 * This private method parse one line of the csv file to get a list of co-authors of one paper
+	 * @param line One line of the parsed file
+	 * @return Array of names of co-authors of one paper
+	 */
 	private String[] getAuthors (String line) {
 		int beg = line.indexOf(", [");
 		int end = line.indexOf("], ");

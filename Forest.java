@@ -8,6 +8,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+/**
+ * This is a generic class implementing weighted graph, where weights are of Double type and vertices (nodes) can be of any type.  
+ * @author Jan Prokop
+ *
+ * @param <E> Vertices type. 
+ */
 public class Forest<E> {
 	private HashMap<E, HashMap<E, Double>> graph;
 	/*

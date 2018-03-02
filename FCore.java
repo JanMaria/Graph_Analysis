@@ -2,8 +2,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
+/**
+ * The purpose of this class is to trim a weighted graph to it's f-core with given threshold. The threshold is the minimal 
+ * weight of each vertex in resulting graph. It's important to mention that the initial weight of one vertex is likely to
+ * decrease after each trimming. 
+ * @author Jan Prokop
+ *
+ */
 public class FCore{
 	private HashMap<String, HashMap<String, Double>> graph;
 	private static double threshold = 2;
@@ -13,7 +19,7 @@ public class FCore{
 	}
 	
 	public void setThreshold(int threshold) {
-		this.threshold = threshold;
+		FCore.threshold = threshold;
 	}
 	
 	public HashMap<String, HashMap<String, Double>> findFCore() {
