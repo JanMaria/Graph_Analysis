@@ -12,16 +12,19 @@ import java.util.Map;
  */
 public class FCore{
 	private HashMap<String, HashMap<String, Double>> graph;
+	// Minimal edge weight in the subgraph resulting after trimming procedure
 	private static double threshold = 2;
 	
 	public FCore(HashMap<String, HashMap<String, Double>> graph) {
 		this.graph = graph;
 	}
 	
+	// Sets a new threshold
 	public void setThreshold(int threshold) {
 		FCore.threshold = threshold;
 	}
 	
+	// Executes trimming procedure upon the graph
 	public HashMap<String, HashMap<String, Double>> findFCore() {
 		HashSet<String> exterior = new HashSet<>();
 		for (String author : graph.keySet()) 

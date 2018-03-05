@@ -28,7 +28,7 @@ public class MyParser {
 	}
 	
 	/**
-	 * This private method parse one line of the csv file to get a list of co-authors of one paper
+	 * This private method parse one line of the .json file to get a list of co-authors of one paper
 	 * @param line One line of the parsed file
 	 * @return Array of names of co-authors of one paper
 	 */

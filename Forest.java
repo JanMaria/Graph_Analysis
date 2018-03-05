@@ -18,11 +18,12 @@ public class Forest<E> {
 	private HashMap<E, HashMap<E, Double>> graph;
 	/*
 	 * in both of following structures there will be only one entry for one edge
-	 * (either node1-node2 or node2-node1 but not both)  
+	 * (either node1-node2 or node2-node1 but not both) to decrease memory usage 
 	 */
 	private HashMap<E, HashSet<E>> cutEdges;  
 	private HashMap<E, HashMap<E, Double>> coefficients;
 	
+	// Current smallest communities
 	private LinkedList<Branch<E>> branchTips;
 	// Isn't a tree, in essence, a big branch? ;) 
 	private LinkedList<Branch<E>> trees; 
@@ -39,7 +40,7 @@ public class Forest<E> {
 	}
 	
 	/*
-	 * This method makes a list of connected components in a given graph and creates Branch objects with them.
+	 * This method makes a list of connected components in an initial graph and creates Branch objects with them.
 	 * They become first branches (tree trunks)  
 	 */
 	public void plantForest(){
@@ -53,6 +54,10 @@ public class Forest<E> {
 		initAllCoeffs();
 	}
 	
+	/**
+	 * Method executing entire splitting from the initial graph through gradually downsizing communities 
+	 * until only singular nodes remains. 
+	 */
 	public void growWholeBranches() {
 		while (growBranches(1)) {}
 	}
@@ -69,7 +74,7 @@ public class Forest<E> {
 		}
 	}
 	
-	//split connected components of the graph as long as they are all smaller than the threshold
+	// Splits all connected components of the graph which are bigger than threshold until they aren't. 
 	private boolean growBranches(int threshold) {
 		boolean nextIterNeeded = false; 
 		List<Branch<E>> branchOuts = new LinkedList<>(); 
@@ -89,7 +94,7 @@ public class Forest<E> {
 	}
 	
 	/*
-	 * for a given connected component cut it's weakest edges as long as it will partition into at least two parts
+	 * for a given connected component cut it's weakest edges until it will partition into at least two parts
 	 */
 	private List<Set<E>> branchOut(Set<E> branch) {
 		List<Set<E>> branchOuts = new LinkedList<>();
@@ -113,6 +118,7 @@ public class Forest<E> {
 		emptyDumpster(dumpster);
 	}
 	
+	// Helper method that prevents trimEdges method from modifying a set while iterating over it (and thus getting an error)
 	private void emptyDumpster(List<E> dumpster) {
 		Iterator<E> it = dumpster.iterator();
 		while(it.hasNext()) {
@@ -120,7 +126,7 @@ public class Forest<E> {
 		}
 	}
 	
-	
+	// Fetches already calculated edge clustering coefficient from HashMap 
 	private double getCoeff(E start, E end) {
 		if (coefficients.containsKey(start))
 			if (coefficients.get(start).containsKey(end))
@@ -128,6 +134,10 @@ public class Forest<E> {
 		return coefficients.get(end).get(start);
 	}
 	
+	/**
+	 * Recalculate edge clustering coefficients in the neighborhood of the node when they might have changed 
+	 * @param node Vertex whose edge was cut
+	 */
 	private void recalcCoeffs(E node) {
 		for (E neighbor : graph.get(node).keySet())
 			if (!isCut(node, neighbor)) {
@@ -140,6 +150,7 @@ public class Forest<E> {
 			}
 	}
 	
+	// Calculates the smallest edge clustering coefficient within given subgraph 
 	private double findMinCoeff(Set<E> branch) {
 		if (branch.size() < 2) throw (new RuntimeException("Branch has only one node"));
 		double min = Double.POSITIVE_INFINITY;
@@ -152,7 +163,7 @@ public class Forest<E> {
 		return min;
 	}
 	
-	//all necessary changes upon edge cut 
+	// Executes all necessary changes upon edge cut 
 	private void cutEdge(E start, E end) {
 		if (!cutEdges.containsKey(start)) cutEdges.put(start, new HashSet<>()); 
 		cutEdges.get(start).add(end);
@@ -161,12 +172,14 @@ public class Forest<E> {
 		recalcCoeffs(end);
 	}
 	
+	// Removes redundant entry from HashMap containing calculated coefficients
 	private void removeFromCoeff(E start, E end) {
 		if (coefficients.containsKey(start))
 			if (!coefficients.get(start).keySet().remove(end))
 				coefficients.get(end).keySet().remove(start);
 	}
 	
+	// Calculates all edge clustering coefficients for the given graph (this method is used just once)
 	private void initAllCoeffs() {
 		for (E node : graph.keySet())
 			for (E neighbor : graph.get(node).keySet())
@@ -176,6 +189,7 @@ public class Forest<E> {
 				}
 	}
 	
+	// Checks if given edge has already calculated value for its edge clustering coefficient 
 	private boolean hasCoeff(E start, E end) {
 		if (coefficients.keySet().contains(start))
 			if (coefficients.get(start).keySet().contains(end)) return true;
@@ -200,6 +214,7 @@ public class Forest<E> {
 		return sum / maxTriangles;
 	}
 	
+	// Calculates the number of triangles in the graph that contains both given nodes
 	private int getNumTriangles(E start, E end) {
 		int sum = 0;
 		for (E node : graph.get(start).keySet())
@@ -210,7 +225,7 @@ public class Forest<E> {
 		return sum;
 	}
 	
-	//node degree in the graph that has lost some edges
+	// Calculates node's degree in the graph after cutting some edges
 	private int newDegree(E node) {
 		int degree = 0;
 		degree += graph.get(node).keySet().stream().filter(other -> !isCut(node, other)).count();
@@ -218,7 +233,7 @@ public class Forest<E> {
 		return degree;
 	}
 	
-	//find Connected Components
+	// Find Connected Components in a subgraph
 	private List<Set<E>> findCCs(Set<E> motherSet) {
 		List<Set<E>> CCs = new LinkedList<>();
 		Set<E> visited = new HashSet<>();
@@ -231,6 +246,7 @@ public class Forest<E> {
 		return CCs;
 	}
 	
+	// Executes depth first search starting with node
 	private Set<E> DFS (E node) {
 		Set<E> newCC = new HashSet<>();
 		Stack<E> stack = new Stack<>();
@@ -249,6 +265,7 @@ public class Forest<E> {
 		return newCC;
 	}
 	
+	// Checks whether the edge between given nodes was cut
 	private boolean isCut(E curr, E neighbor) {
 		if (cutEdges.keySet().contains(curr))
 			if (cutEdges.get(curr).contains(neighbor))
@@ -264,12 +281,12 @@ public class Forest<E> {
 	 * of the graph into gradually smaller communities  
 	 */
 	private class Branch<E> {
-		private Forest<E> forest;
+		//private Forest<E> forest;
 		private Set<E> nodes;
 		private Branch<E> parent;
 		private List<Branch<E>> children; 
 		
-		
+		// Constructor for branches that have parent branches
 		public Branch(Set<E> nodes, Branch<E> parent) {
 			this.nodes = nodes;
 			this.parent = parent;
@@ -278,24 +295,29 @@ public class Forest<E> {
 			//parent.children.add(this);
 		}
 		
+		// Constructor for root branches
 		public Branch(Set<E> nodes) {
 			this.nodes = nodes;
 			parent = null;
 			children = new LinkedList<>(); 
 		}
 		
+		// Gets comprising nodes
 		public Set<E> getNodes() {
 			return nodes;
 		}
 		
+		// Adds children branches
 		public void addChild(Branch<E> child) {
 			children.add(child);
 		}
 		
+		// Gets children branches
 		public List<Branch<E>> getChildren() {
 			return children;
 		}
 		
+		// Gets parent branches
 		public Branch<E> getParent() {
 			return parent;
 		}
